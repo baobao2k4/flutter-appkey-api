@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const { networkInterfaces } = require("os");
 
 const app = express();
 app.use(cors());
@@ -38,7 +39,6 @@ app.get("/api/check-key", (req, res) => {
     return res.status(403).json({ message: "appKey không hợp lệ" });
   }
 
-  // Kiểm tra xem key có bị khóa không
   if (lockedKeys[appKey]) {
     return res.status(403).json({ message: "appKey đã bị khóa" });
   }
@@ -46,7 +46,6 @@ app.get("/api/check-key", (req, res) => {
   return res.json({ status: "ok" });
 });
 
-// API để khóa key
 app.post("/api/lock-key", (req, res) => {
   const { appKey } = req.body;
 
@@ -58,7 +57,6 @@ app.post("/api/lock-key", (req, res) => {
   return res.json({ message: "Đã khóa key thành công" });
 });
 
-// API để mở khóa key
 app.post("/api/unlock-key", (req, res) => {
   const { appKey } = req.body;
 
@@ -70,7 +68,6 @@ app.post("/api/unlock-key", (req, res) => {
   return res.json({ message: "Đã mở khóa key thành công" });
 });
 
-// API để kiểm tra trạng thái khóa của key
 app.get("/api/key-status", (req, res) => {
   const { appKey } = req.query;
 
@@ -84,18 +81,17 @@ app.get("/api/key-status", (req, res) => {
   });
 });
 
-app.listen(3000, '0.0.0.0', () => {
-  console.log("✅ API check-key đang chạy tại http://0.0.0.0:3000");
-  // Lấy địa chỉ IP của máy để hiển thị
-  const { networkInterfaces } = require('os');
+// 🔥 Sửa phần chạy server phù hợp với Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ API check-key đang chạy tại http://localhost:${PORT}`);
+
+  // Log địa chỉ IP cục bộ nếu chạy máy thật
   const nets = networkInterfaces();
-  const results = {};
-  
   for (const name of Object.keys(nets)) {
     for (const net of nets[name]) {
-      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
       if (net.family === 'IPv4' && !net.internal) {
-        console.log(`🌐 Truy cập từ thiết bị khác qua địa chỉ: http://${net.address}:3000`);
+        console.log(`🌐 Có thể truy cập tại: http://${net.address}:${PORT}`);
       }
     }
   }
